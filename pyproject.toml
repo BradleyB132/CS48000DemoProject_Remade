@@ -1,0 +1,24 @@
+[project]
+name = "cs48000demoproject-remade"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Bradley Brenning",email = "Brenbra132@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+
+# Consolidated dependency list: Streamlit for the UI, SQLAlchemy as the ORM,
+# psycopg2-binary as the PostgreSQL driver, and pandas for spreadsheet
+# ingestion and consolidation operations used by the ETL/service layer.
+dependencies = [
+    "streamlit (>=1.54.0,<2.0.0)",
+    "sqlalchemy (>=2.0,<3.0)",
+    "psycopg2-binary (>=2.9)",
+    "pandas (>=2.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
