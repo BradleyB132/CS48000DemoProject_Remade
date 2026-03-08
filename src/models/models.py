@@ -9,6 +9,7 @@ definitions and do not allocate significant runtime resources beyond class
 objects.
 Space complexity: O(1) per model class.
 """
+
 from datetime import datetime
 from sqlalchemy import (
     Column,
@@ -19,10 +20,11 @@ from sqlalchemy import (
     TIMESTAMP,
     ForeignKey,
 )
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import DeclarativeBase, relationship
 
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
 
 
 class ProductionLog(Base):
@@ -47,8 +49,17 @@ class ProductionLog(Base):
     # Relationship references: one ProductionLog can have many QualityInspections
     # and one ShippingManifest (1:1). Using `relationship` allows SQLAlchemy to
     # load related objects conveniently when needed.
-    inspections = relationship("QualityInspection", back_populates="production_log", cascade="all, delete-orphan")
-    shipping_manifest = relationship("ShippingManifest", back_populates="production_log", uselist=False, cascade="all, delete-orphan")
+    inspections = relationship(
+        "QualityInspection",
+        back_populates="production_log",
+        cascade="all, delete-orphan",
+    )
+    shipping_manifest = relationship(
+        "ShippingManifest",
+        back_populates="production_log",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
 
 
 class QualityInspection(Base):
@@ -61,7 +72,11 @@ class QualityInspection(Base):
     __tablename__ = "quality_inspections"
 
     quality_inspection_id = Column(Integer, primary_key=True, index=True)
-    production_log_id = Column(Integer, ForeignKey("production_logs.production_log_id", ondelete="CASCADE"), nullable=False)
+    production_log_id = Column(
+        Integer,
+        ForeignKey("production_logs.production_log_id", ondelete="CASCADE"),
+        nullable=False,
+    )
     defect_type = Column(String(100), nullable=True)
     defect_severity = Column(String(20), nullable=True)
     is_defective = Column(Boolean, nullable=False, default=False)
@@ -82,7 +97,12 @@ class ShippingManifest(Base):
     __tablename__ = "shipping_manifests"
 
     shipping_manifest_id = Column(Integer, primary_key=True, index=True)
-    production_log_id = Column(Integer, ForeignKey("production_logs.production_log_id", ondelete="CASCADE"), nullable=False, unique=True)
+    production_log_id = Column(
+        Integer,
+        ForeignKey("production_logs.production_log_id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+    )
     ship_date = Column(Date, nullable=True)
     destination = Column(String(255), nullable=False)
     is_shipped = Column(Boolean, nullable=False, default=False)
