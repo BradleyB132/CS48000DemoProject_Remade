@@ -1,34 +1,26 @@
-[project]
+[tool.poetry]
 name = "cs48000demoproject-remade"
 version = "0.1.0"
 description = ""
-authors = [
-    {name = "Bradley Brenning",email = "Brenbra132@gmail.com"}
-]
+authors = ["Bradley Brenning <Brenbra132@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.12"
 
-# Consolidated dependency list: Streamlit for the UI, SQLAlchemy as the ORM,
-# psycopg2-binary as the PostgreSQL driver, and pandas for spreadsheet
-# ingestion and consolidation operations used by the ETL/service layer.
-dependencies = [
-    "streamlit (>=1.54.0,<2.0.0)",
-    "sqlalchemy (>=2.0,<3.0)",
-    "psycopg2-binary (>=2.9)",
-    "pandas (>=2.0)",
-    "python-dotenv (>=1.2.2,<2.0.0)",
-    "ruff (>=0.15.5,<0.16.0)",
-    "mypy (>=1.19.1,<2.0.0)",
-    "pytest-cov (>=7.0.0,<8.0.0)"
-]
+[tool.poetry.dependencies]
+python = "^3.11"
+streamlit = "^1.54.0"
+sqlalchemy = "^2.0"
+psycopg2-binary = "^2.9"
+pandas = "^2.0"
+python-dotenv = "^1.2"
+sentry-sdk = "^2.54"
 
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.15"
+mypy = "^1.19"
+pytest-cov = "^7.0"
+pytest-playwright = "^0.7"
+pre-commit = "^4.5"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[dependency-groups]
-dev = [
-    "pytest-playwright (>=0.7.2,<0.8.0)",
-    "pre-commit (>=4.5.1,<5.0.0)"
-]
