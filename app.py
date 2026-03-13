@@ -14,14 +14,19 @@ Design notes:
 - Space complexity: O(n) to store the DataFrame in memory for the session.
 """
 
-from dotenv import load_dotenv
-import streamlit as st
-import pandas as pd
-from typing import List, Dict, Any
-import sentry_sdk
+import logging
 import os
+from typing import Any, Dict, List
 
+import pandas as pd
+import sentry_sdk
+import streamlit as st
+from dotenv import load_dotenv
+
+from src.logging_config import setup_logging
 from src.services import services
+
+logger = logging.getLogger(__name__)
 
 
 @st.cache_data(ttl=300)
@@ -33,7 +38,10 @@ def fetch_logs(limit: int = 1000) -> List[Any]:
 
     Complexity: O(n) to fetch and materialize rows.
     """
-    return services.list_production_logs(limit=limit)
+    logger.debug("fetch_logs: requesting limit=%d", limit)
+    logs = services.list_production_logs(limit=limit)
+    logger.info("fetch_logs: returned %d production logs", len(logs))
+    return logs
 
 
 def logs_to_dataframe(logs: List[Any]) -> pd.DataFrame:
@@ -78,6 +86,7 @@ def logs_to_dataframe(logs: List[Any]) -> pd.DataFrame:
     # Ensure production_date is a datetime/date type for proper filtering
     if not df.empty and df["production_date"].dtype == object:
         df["production_date"] = pd.to_datetime(df["production_date"]).dt.date
+    logger.debug("logs_to_dataframe: built DataFrame with %d rows", len(df))
     return df
 
 
@@ -153,10 +162,12 @@ def apply_filters(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def main():
+    setup_logging()
 
     st.set_page_config(page_title="Production Dashboard", layout="wide")
     st.title("Production Dashboard")
 
+    logger.info("Production Dashboard starting: fetching logs")
     logs = fetch_logs(limit=1000)
     df = logs_to_dataframe(logs)
 
@@ -174,9 +185,8 @@ def main():
         ascending = st.checkbox("Ascending", value=False)
         try:
             filtered = filtered.sort_values(by=sort_by, ascending=ascending)
-        except Exception:
-            # Fail-safe: ignore sort if column missing or wrong type
-            pass
+        except Exception as exc:
+            logger.warning("Sort failed (column=%s): %s", sort_by, exc)
 
     st.subheader("Production Logs Table")
     # Display as an interactive table; uses Streamlit's optimized renderer.
@@ -188,6 +198,7 @@ def main():
         options=[None] + filtered["production_log_id"].tolist(),
     )
     if selected_id:
+        logger.debug("Loading detail for production_log_id=%s", selected_id)
         detail = services.get_production_log_by_id(selected_id)
         if detail:
             st.subheader(f"Details for {detail.lot_number}")

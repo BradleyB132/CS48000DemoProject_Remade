@@ -9,11 +9,17 @@ unit testing and maintains the project's layered architecture.
 
 Time and space complexity notes are provided per function.
 """
+
+import logging
 from typing import List, Optional
+
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+
 from src.database.connection import default_db
-from src.models.models import ProductionLog, QualityInspection, ShippingManifest
+from src.models.models import ProductionLog, QualityInspection
+
+logger = logging.getLogger(__name__)
 
 
 def list_production_logs(limit: int = 100) -> List[ProductionLog]:
@@ -36,6 +42,9 @@ def list_production_logs(limit: int = 100) -> List[ProductionLog]:
             .limit(limit)
         )
         result = session.execute(stmt).scalars().all()
+        logger.debug(
+            "list_production_logs: limit=%d, returned %d rows", limit, len(result)
+        )
         return result
 
 
@@ -57,10 +66,18 @@ def get_production_log_by_id(production_log_id: int) -> Optional[ProductionLog]:
             )
             .where(ProductionLog.production_log_id == production_log_id)
         )
-        return session.execute(stmt).scalars().one_or_none()
+        log = session.execute(stmt).scalars().one_or_none()
+        logger.debug(
+            "get_production_log_by_id: id=%s, found=%s",
+            production_log_id,
+            log is not None,
+        )
+        return log
 
 
-def create_production_log(lot_number: str, line_number: int, production_date, shift_leader: str) -> ProductionLog:
+def create_production_log(
+    lot_number: str, line_number: int, production_date, shift_leader: str
+) -> ProductionLog:
     """Create and persist a new ProductionLog.
 
     Time complexity: O(1).
@@ -78,6 +95,11 @@ def create_production_log(lot_number: str, line_number: int, production_date, sh
         # flush to populate PK without committing if the database assigns it
         session.flush()
         session.refresh(new_log)
+        logger.info(
+            "create_production_log: created lot_number=%s, production_log_id=%s",
+            lot_number,
+            new_log.production_log_id,
+        )
         return new_log
 
 
@@ -88,5 +110,13 @@ def list_inspections_for_log(production_log_id: int) -> List[QualityInspection]:
     Space complexity: O(m).
     """
     with default_db.get_session() as session:
-        stmt = select(QualityInspection).where(QualityInspection.production_log_id == production_log_id)
-        return session.execute(stmt).scalars().all()
+        stmt = select(QualityInspection).where(
+            QualityInspection.production_log_id == production_log_id
+        )
+        result = session.execute(stmt).scalars().all()
+        logger.debug(
+            "list_inspections_for_log: production_log_id=%s, count=%d",
+            production_log_id,
+            len(result),
+        )
+        return result
