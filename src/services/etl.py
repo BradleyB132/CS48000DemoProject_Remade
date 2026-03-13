@@ -98,9 +98,10 @@ def summary_metrics(consolidated: pd.DataFrame) -> pd.DataFrame:
     resulting grouped rows, where k is number of lines.
     """
     df = consolidated.copy()
-    # Treat NaN in is_defective as False for metrics
+    # Treat NaN in is_defective as False for metrics (where() avoids fillna FutureWarning)
     if "is_defective" in df.columns:
-        df["is_defective_bool"] = df["is_defective"].fillna(False).astype(bool)
+        ser = df["is_defective"]
+        df["is_defective_bool"] = ser.where(ser.notna(), False).astype(bool)
     else:
         df["is_defective_bool"] = False
 
