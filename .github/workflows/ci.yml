@@ -210,3 +210,5 @@ jobs:
         run: |
           poetry run pre-commit run --all-files --show-diff-on-failure --color=always
 
+      - name: Build Docker image
+        run: docker build -t demo-app:ci .
