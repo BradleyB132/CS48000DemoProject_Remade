@@ -165,7 +165,7 @@ def main():
     setup_logging()
 
     st.set_page_config(page_title="Production Dashboard", layout="wide")
-    st.title("Production Dashboard")
+    st.title("CD Test")
 
     logger.info("Production Dashboard starting: fetching logs")
     logs = fetch_logs(limit=1000)
