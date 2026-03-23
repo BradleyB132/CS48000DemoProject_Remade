@@ -2,7 +2,7 @@ import os
 from sqlalchemy import text
 from src.database.connection import Database
 
-os.environ["TESTING"] = "1"
+os.environ["TESTINGDB"] = "1"
 
 
 def test_database_connection():
