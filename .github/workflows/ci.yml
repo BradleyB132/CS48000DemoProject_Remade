@@ -188,6 +188,9 @@ jobs:
         run: poetry install --no-interaction --no-root
 
 
+      - name: Build Docker image
+        run: docker build -t demo-app:ci .
+
       # ------------------------------------------------------
       # Step 8: Run pre-commit
       # ------------------------------------------------------
@@ -209,6 +212,3 @@ jobs:
         #
         run: |
           poetry run pre-commit run --all-files --show-diff-on-failure --color=always
-
-      - name: Build Docker image
-        run: docker build -t demo-app:ci .
